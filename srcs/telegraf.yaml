@@ -1,0 +1,41 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: telegraf
+  labels:
+    app: telegraf
+spec:
+  type: ClusterIP
+  selector:
+    app: telegraf
+  ports:
+    - port: 8125
+      targetPort: 8125
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telegraf
+  labels:
+    app: telegraf
+spec:
+  selector:
+    matchLabels:
+      app: telegraf
+  template:
+    metadata:
+      labels:
+        app: telegraf
+    spec:
+      containers:
+      - name: telegraf
+        image: telegraf
+        imagePullPolicy: Never
+        volumeMounts:
+        - name: dockersock
+          mountPath: "/var/run/docker.sock"
+      volumes:
+      - name: dockersock
+        hostPath:
+          path: /var/run/docker.sock
+      terminationGracePeriodSeconds: 0

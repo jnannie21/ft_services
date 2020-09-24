@@ -1,0 +1,47 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: phpmyadmin
+  labels:
+    app: phpmyadmin
+spec:
+  type: LoadBalancer
+  loadBalancerIP: $loadBalancerIP
+  selector:
+    app: phpmyadmin
+  ports:
+    - port: 5000
+      targetPort: 443
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phpmyadmin
+  labels:
+    app: phpmyadmin
+spec:
+  selector:
+    matchLabels:
+      app: phpmyadmin
+  template:
+    metadata:
+      labels:
+        app: phpmyadmin
+    spec:
+      containers:
+      - name: phpmyadmin
+        image: phpmyadmin
+        imagePullPolicy: Never
+        volumeMounts:
+        - name: phpmyadmin-shared-data
+          mountPath: /var/www/phpmyadmin
+      - name: phpmyadmin-phpfpm
+        image: phpfpm
+        imagePullPolicy: Never
+        volumeMounts:
+        - name: phpmyadmin-shared-data
+          mountPath: /var/www/phpmyadmin
+      volumes:
+      - name: phpmyadmin-shared-data
+        emptyDir: {}
+      terminationGracePeriodSeconds: 0

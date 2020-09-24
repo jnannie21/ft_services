@@ -1,0 +1,47 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: wordpress
+  labels:
+    app: wordpress
+spec:
+  type: LoadBalancer
+  loadBalancerIP: $loadBalancerIP
+  selector:
+    app: wordpress
+  ports:
+    - port: 5050
+      targetPort: 443
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+  labels:
+    app: wordpress
+spec:
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      containers:
+      - name: wordpress
+        image: wordpress
+        imagePullPolicy: Never
+        volumeMounts:
+        - name: wordpress-shared-data
+          mountPath: /var/www/wordpress
+      - name: wordpress-phpfpm
+        image: phpfpm
+        imagePullPolicy: Never
+        volumeMounts:
+        - name: wordpress-shared-data
+          mountPath: /var/www/wordpress
+      volumes:
+      - name: wordpress-shared-data
+        emptyDir: {}
+      terminationGracePeriodSeconds: 0
